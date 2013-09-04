@@ -16,6 +16,7 @@ for cities in city_dict_io:
 ## Peering Information
 ## Physical data information from Atlas
 ## Based on Joe's - Add location codes lookup module for words less than 3 characters from Infocom Project
+## Add interpolation logic
 
 def getASN(IP):
     ASN="ASN:NULL"
