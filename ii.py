@@ -18,6 +18,8 @@ for cities in city_dict_io:
 ## Based on Joe's - Add location codes lookup module for words less than 3 characters from Infocom Project
 ## Add interpolation logic
 
+
+# Do a redis pipeline for a probe to improve lookup performance
 def getASN(IP):
     ASN="ASN:NULL"
     return ASN
