@@ -3,6 +3,13 @@ import re
 from publicsuffix import PublicSuffixList
 import trie
 
+## TODO
+## Add ASN mapping - use REDIS?
+## Peering Information
+## Physical data information from Atlas
+## Add interpolation logic
+
+## City trie 
 psl = PublicSuffixList()
 city_dict_io = open('dictionary.dat','r')
 city_trie = trie.Trie()
@@ -11,18 +18,27 @@ for cities in city_dict_io:
     if len(tmp) > 3:
         city_trie[tmp] = 0
 
-## TODO
-## Add ASN mapping - use REDIS?
-## Peering Information
-## Physical data information from Atlas
-## Based on Joe's - Add location codes lookup module for words less than 3 characters from Infocom Project
-## Add interpolation logic
-
+## Map lookup
+locMap = {}
+with open('FullMap.txt','r') as mapFile:
+    for line in mapFile:
+        values = line.strip().split('--')
+        key = re.sub(r'\s+','',values[0])
+        ll = values[2][1:-1]
+        keys = key.split(",")
+        for k in keys:
+            locMap[k] = ll
 
 # Do a redis pipeline for a probe to improve lookup performance
 def getASN(IP):
     ASN="ASN:NULL"
     return ASN
+
+# Link this module with withDNS function and avoid three character only lookups
+def lookupFromMap(hopValue):
+    location = "NULL"
+    location = locMap[hopValue]
+    return location    
 
 def withDNS(IPandDNS):
     values = []
