@@ -8,7 +8,7 @@ import redis
 ## Add ASN mapping - use REDIS?
 ## Peering Information
 ## Physical data information from Atlas
-## Add interpolation logic
+## Add interpolation logic -- best guess
 ## Do a redis pipeline for a probe to improve lookup performance
 
 ## City trie 
