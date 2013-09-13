@@ -20,7 +20,7 @@ for cities in city_dict_io:
     if len(tmp) > 3:
         city_trie[tmp] = 0
 
-## Map lookup
+## Map lookup -- code to city map
 locMap = {}
 with open('FullMap.txt','r') as mapFile:
     for line in mapFile:
