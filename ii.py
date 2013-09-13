@@ -9,7 +9,7 @@ import redis
 ## Peering Information
 ## Physical data information from Atlas
 ## Add interpolation logic -- best guess
-## Do a redis pipeline for a probe to improve lookup performance
+## Do a redis pipeline for an entire traceroute probe to improve lookup performance
 
 ## City trie 
 psl = PublicSuffixList()
@@ -33,6 +33,7 @@ with open('FullMap.txt','r') as mapFile:
 
 ## Redis handle
 redisHandle = redis.Redis("localhost")
+
 def getASN(IP):
     value = redisHandle.get(IP)
     if value:
