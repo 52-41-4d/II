@@ -2,12 +2,14 @@ import sys
 import re
 from publicsuffix import PublicSuffixList
 import trie
+import redis
 
 ## TODO
 ## Add ASN mapping - use REDIS?
 ## Peering Information
 ## Physical data information from Atlas
 ## Add interpolation logic
+## Do a redis pipeline for a probe to improve lookup performance
 
 ## City trie 
 psl = PublicSuffixList()
@@ -29,9 +31,14 @@ with open('FullMap.txt','r') as mapFile:
         for k in keys:
             locMap[k] = ll
 
-# Do a redis pipeline for a probe to improve lookup performance
+## Redis handle
+redisHandle = redis.Redis("localhost")
 def getASN(IP):
-    ASN="ASN:NULL"
+    value = redisHandle.get(IP)
+    if value:
+        ASN="ASN:%s" % (value)
+    else:
+        ASN="ASN:NULL"
     return ASN
 
 # Link this module with withDNS function and avoid three character only lookups
