@@ -97,7 +97,7 @@ def processFiles(dnsFile,trFile):
                     hop = dns_to_ip[e2[0]]
                     entry['DNS'] = hop
                     entry['NAME'] = psl.get_public_suffix(hop)
-                    entry['GEO'] = getLocation(hop)
+                    entry['GEO'] = re.sub(r'\s','',getLocation(hop))
                     entry['ASN'] = ''
                 else:
                     entry['IP'] = e2[0]
