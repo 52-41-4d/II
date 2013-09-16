@@ -7,9 +7,24 @@ CODE=$PROJECT_HOME/Code
 
 # point prerun input to full IPtoASN
 usage () {
+  echo "LOAD REDIS: $0 -l" 
   echo "PRERUN USAGE: $0 -p"
   echo "RUN USAGE: $0 -r"
   echo "CLEANUP USAGE: $0 -c"
+}
+
+loadDB() {
+  echo "Starting Redis server in the background..."
+  redis-server &
+  sleep 3
+  reply=`redis-cli ping`
+  if [ $reply=="PONG" ]; then
+      echo "Redis server started in the background - OK"
+      #Add only when need to load DB - may be for the first time alone?
+      #python $CODE/redisConnect.py $OUTPUT/IPtoASN.txt
+  else
+      echo "Please install Redis server"
+  fi
 }
 
 prerun() {
@@ -19,8 +34,6 @@ prerun() {
   reply=`redis-cli ping`
   if [ $reply=="PONG" ]; then
       echo "Redis server started in the background - OK"
-      #Add only when need to update DB
-      #python $CODE/redisConnect.py $OUTPUT/IPtoASN-tmp.txt
   else
       echo "Please install Redis server"
   fi
@@ -41,6 +54,10 @@ clean() {
 
 while getopts ":prc" opt; do
     case $opt in
+    l)
+        loadDB
+        exit 0
+        ;;
 	p)
 	    prerun
 	    exit 0
