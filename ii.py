@@ -64,7 +64,7 @@ def getLocation(hop):
                     continue
     return ','.join(location)
 
-def processFiles(dnsFile,trFile):
+def processFiles(dnsFile,trFile,jsonFile):
     dns_to_ip = {}
     total_hops = 0
     name_coverage = 0
@@ -110,6 +110,7 @@ def processFiles(dnsFile,trFile):
             index += 1
         print report_line_entries
         print "\n"
+
     print "There are %d dns names on record" %(len(dns_to_ip))
     print "Total network hops: %d" %(total_hops)
     print "Total resoved hops: %d" %(name_coverage)
@@ -117,4 +118,5 @@ def processFiles(dnsFile,trFile):
 if __name__ == '__main__':
     dnsFile = sys.argv[1]
     trFile = sys.argv[2]
-    processFiles(dnsFile,trFile)
+    jsonFile = sys.argv[3]
+    processFiles(dnsFile,trFile,jsonFile)

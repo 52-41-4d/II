@@ -1,6 +1,6 @@
 #!/bin/bash
 
-outFile="/scratch/SIGCOMM14/Output/IPtoASN2.txt"
+outFile="/scratch/SIGCOMM14/Output/IPtoASN3.txt"
 while read line
 do
     whois -h whois.cymru.com " -f -o $line" |sed -n 3p >> $outFile

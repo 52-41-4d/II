@@ -41,7 +41,7 @@ prerun() {
 
 run() { 
   echo "Did you run the tool with -p option?"
-  python $CODE/ii.py $INPUT/dns.txt $INPUT/path.txt
+  python $CODE/ii.py $INPUT/dns.txt $INPUT/path.txt $OUTPUT/intermediate.json
 }
 
 clean() {
