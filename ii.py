@@ -40,20 +40,28 @@ def getASN(line_report_entries):
 
 def getLocation(hop):
     location = []
+    seen = 0
+    hit = 0
     for i in range(len(hop)):
         for j in range(0,31):
             if i+j > len(hop):
                 break
             to_test = hop[i:i+j]
             try:
-                i = city_trie[to_test.lower()]
-                location.append(to_test)
-            except trie.NeedMore:
-                continue
-            except KeyError:
-                continue
+                if seen==0 and hit==0:
+                    city_trie[to_test.lower()]
+                    location.append(to_test)
+                    hit = 1
             except:
-                continue
+                try:
+                    loc = locMap[to_test]
+                    if loc and seen==0 and hit==0:
+                        location.append(loc.split(',')[0].lower())
+                        seen = 1
+                    else:
+                        continue
+                except:
+                    continue
     return ','.join(location)
 
 def processFiles(dnsFile,trFile):
