@@ -68,7 +68,7 @@ def processFiles(dnsFile,trFile):
     dns_to_ip = {}
     total_hops = 0
     name_coverage = 0
-    
+
     print "Processing DNS"
     f=open(dnsFile,'r')
     for lines in f:
