@@ -19,7 +19,8 @@ prerun() {
   reply=`redis-cli ping`
   if [ $reply=="PONG" ]; then
       echo "Redis server started in the background - OK"
-      python $CODE/redisConnect.py $OUTPUT/IPtoASN-tmp.txt
+      #Add only when need to update DB
+      #python $CODE/redisConnect.py $OUTPUT/IPtoASN-tmp.txt
   else
       echo "Please install Redis server"
   fi

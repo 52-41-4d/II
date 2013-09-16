@@ -5,11 +5,9 @@ import trie
 import redis
 
 ## TODO
-## Add ASN mapping - use REDIS?
 ## Peering Information
 ## Physical data information from Atlas
 ## Add interpolation logic -- best guess
-## Do a redis pipeline for an entire traceroute probe to improve lookup performance
 
 ## City trie 
 psl = PublicSuffixList()
@@ -26,84 +24,45 @@ with open('FullMap.txt','r') as mapFile:
     for line in mapFile:
         values = line.strip().split('--')
         key = re.sub(r'\s+','',values[0])
-        ll = values[2][1:-1]
+        ll = values[1][1:-1]
         keys = key.split(",")
         for k in keys:
             locMap[k] = ll
 
 ## Redis handle
 redisHandle = redis.Redis("localhost")
+def getASN(line_report_entries):
+    pipe = redisHandle.pipeline() 
+    for entry in line_report_entries:
+        pipe.get(entry['IP'])
+    values = pipe.execute()
+    return values
 
-def getASN(IP):
-    value = redisHandle.get(IP)
-    if value:
-        ASN="ASN:%s" % (value)
-    else:
-        ASN="ASN:NULL"
-    return ASN
-
-# Link this module with withDNS function and avoid three character only lookups
-def lookupFromMap(hopValue):
-    location = "NULL"
-    location = locMap[hopValue]
-    return location    
-
-def withDNS(IPandDNS):
-    values = []
-    tVal = IPandDNS.split(',')
-    IP = tVal[0]
-    DNS = tVal[1] 
-    values.append("IP:%s" % (IP))
-    values.append(DNS)
-    hop = DNS.split(':')[1]
-    name = psl.get_public_suffix(hop)
-    values.append("NAME:%s" % (name))
-    hit = 0
+def getLocation(hop):
+    location = []
     for i in range(len(hop)):
         for j in range(0,31):
             if i+j > len(hop):
                 break
             to_test = hop[i:i+j]
             try:
-                city_trie[to_test.lower()]
-                values.append("GEO:%s" % (to_test))
-                hit = 1
+                i = city_trie[to_test.lower()]
+                location.append(to_test)
             except trie.NeedMore:
                 continue
             except KeyError:
                 continue
             except:
                 continue
-            if hit == 0:
-                values.append("GEO:NULL")
-    values.append(getASN(IP))
-    return values
-
-def withoutDNS(IP):
-    values = []
-    values.append("IP:%s" % (IP))
-    values.append("DNS:NULL")
-    values.append(getASN(IP))
-    return values
-
-def addDetails(lines):
-    reg_hop = re.compile('\d+[.]\d+[.]\d+[.]\d+[,]DNS:')
-    resultHops = []
-    for hop in lines:
-        if reg_hop.findall(hop):
-            resultHops.append(str(withDNS(hop)))
-        else:
-            resultHops.append(str(withoutDNS(hop)))
-    return resultHops
+    return ','.join(location)
 
 def processFiles(dnsFile,trFile):
-    f=open(dnsFile,'r')
-
     dns_to_ip = {}
     total_hops = 0
     name_coverage = 0
     
     print "Processing DNS"
+    f=open(dnsFile,'r')
     for lines in f:
         strs = lines.split('\t')
         t_ip = strs[1].rstrip().lower()
@@ -116,21 +75,33 @@ def processFiles(dnsFile,trFile):
     print "Processing Traceroute"
     g = open(trFile,'r')
     reg_hop = re.compile('\d+[.]\d+[.]\d+[.]\d+[,]\d+')
-    dns_names = []
     for lines in g:
         strs = lines.split('\t')
         report_line_entries = []
         for entries in strs:
+            entry = {}
             if reg_hop.findall(entries):
                 e2 = entries.split(',')
                 total_hops += 1
                 if e2[0] in dns_to_ip:
                     name_coverage += 1
-                    report_line_entries.append("%s,DNS:%s" % (e2[0],dns_to_ip[e2[0]]))
+                    entry['IP'] = e2[0]
+                    hop = dns_to_ip[e2[0]]
+                    entry['DNS'] = hop
+                    entry['NAME'] = psl.get_public_suffix(hop)
+                    entry['GEO'] = getLocation(hop)
+                    entry['ASN'] = ''
                 else:
-                    report_line_entries.append("%s" % (e2[0]))
-        resultHops = addDetails(report_line_entries)
-        print ",".join(resultHops)
+                    entry['IP'] = e2[0]
+                    entry['ASN'] = ''
+                report_line_entries.append(entry)
+        asnValues = getASN(report_line_entries)
+        index = 0
+        for entries in report_line_entries:
+            entries['ASN'] = asnValues[index]
+            index += 1
+        print report_line_entries
+        print "\n"
     print "There are %d dns names on record" %(len(dns_to_ip))
     print "Total network hops: %d" %(total_hops)
     print "Total resoved hops: %d" %(name_coverage)
