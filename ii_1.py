@@ -6,7 +6,7 @@ import redis
 
 ## TODO
 ## Add pickle/json dump so that Phase two can use this output
-## Add D2L mapping
+## Add D2L mapping from sources
 
 ## City trie 
 psl = PublicSuffixList()
