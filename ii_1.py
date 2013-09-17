@@ -63,7 +63,24 @@ def getLocation(hop):
                     continue
     return ','.join(location)
 
+def withDNS(ip):
+    entry = {}
+    entry['IP'] = ip
+    hop = dns_to_ip[ip]
+    entry['DNS'] = hop
+    entry['NAME'] = psl.get_public_suffix(hop)
+    entry['GEO'] = re.sub(r'\s','',getLocation(hop))
+    entry['ASN'] = ''
+    return entry
+
+def withoutDNS(ip):
+    entry = {}
+    entry['IP'] = ip
+    entry['ASN'] = ''
+    return entry
+
 def processFiles(dnsFile,trFile,jsonFile):
+    global dns_to_ip
     dns_to_ip = {}
     total_hops = 0
     name_coverage = 0
@@ -81,27 +98,48 @@ def processFiles(dnsFile,trFile,jsonFile):
        
     print "Processing Traceroute"
     g = open(trFile,'r')
+    end_node = re.compile('\d+[.]\d+[.]\d+[.]\d+$')
     reg_hop = re.compile('\d+[.]\d+[.]\d+[.]\d+[,]\d+')
+
+    #appends source-hops-destination to a dictionary
     for lines in g:
         strs = lines.split('\t')
         report_line_entries = []
+        sdIndex = 0
+        source = ''
+        destination = ''
+        hops = 0
         for entries in strs:
             entry = {}
+            hops += 1
+            if end_node.findall(entries):
+                total_hops += 1
+                if sdIndex == 0:
+                    source = entries
+                    if source in dns_to_ip:
+                        name_coverage += 1
+                        report_line_entries.append(withDNS(source))
+                    else:
+                        report_line_entries.append(withoutDNS(source))
+                if sdIndex == 1:
+                    destination = entries
+                sdIndex += 1
             if reg_hop.findall(entries):
                 e2 = entries.split(',')
                 total_hops += 1
                 if e2[0] in dns_to_ip:
                     name_coverage += 1
-                    entry['IP'] = e2[0]
-                    hop = dns_to_ip[e2[0]]
-                    entry['DNS'] = hop
-                    entry['NAME'] = psl.get_public_suffix(hop)
-                    entry['GEO'] = re.sub(r'\s','',getLocation(hop))
-                    entry['ASN'] = ''
+                    report_line_entries.append(withDNS(e2[0]))
                 else:
-                    entry['IP'] = e2[0]
-                    entry['ASN'] = ''
-                report_line_entries.append(entry)
+                    report_line_entries.append(withoutDNS(e2[0]))
+            if sdIndex == 2 and hops == len(strs):
+                if destination in dns_to_ip:
+                    name_coverage += 1
+                    report_line_entries.append(withDNS(destination))
+                else:
+                    report_line_entries.append(withoutDNS(destination))
+                sdIndex += 1
+
         asnValues = getASN(report_line_entries)
         index = 0
         for entries in report_line_entries:
