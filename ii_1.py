@@ -101,7 +101,7 @@ def processFiles(dnsFile,trFile,jsonFile):
     end_node = re.compile('\d+[.]\d+[.]\d+[.]\d+$')
     reg_hop = re.compile('\d+[.]\d+[.]\d+[.]\d+[,]\d+')
 
-    #appends source-hops-destination to a dictionary
+    ## appends source-hops-destination to a dictionary
     for lines in g:
         strs = lines.split('\t')
         report_line_entries = []
@@ -112,6 +112,7 @@ def processFiles(dnsFile,trFile,jsonFile):
         for entries in strs:
             entry = {}
             hops += 1
+            ## first, append source
             if end_node.findall(entries):
                 total_hops += 1
                 if sdIndex == 0:
@@ -124,6 +125,7 @@ def processFiles(dnsFile,trFile,jsonFile):
                 if sdIndex == 1:
                     destination = entries
                 sdIndex += 1
+            ## next, append hops
             if reg_hop.findall(entries):
                 e2 = entries.split(',')
                 total_hops += 1
@@ -132,6 +134,7 @@ def processFiles(dnsFile,trFile,jsonFile):
                     report_line_entries.append(withDNS(e2[0]))
                 else:
                     report_line_entries.append(withoutDNS(e2[0]))
+            ## finally, append destination
             if sdIndex == 2 and hops == len(strs):
                 if destination in dns_to_ip:
                     name_coverage += 1
@@ -151,6 +154,7 @@ def processFiles(dnsFile,trFile,jsonFile):
     print "There are %d dns names on record" %(len(dns_to_ip))
     print "Total network hops: %d" %(total_hops)
     print "Total resoved hops: %d" %(name_coverage)
+    print "Data has been prepared for Phase two!"
 
 if __name__ == '__main__':
     dnsFile = sys.argv[1]
