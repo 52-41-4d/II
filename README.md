@@ -4,7 +4,7 @@ Invisible Internet
 The following need to be installed -
 
 + Database - Redis, Neo4j
-+ Python - Redis, PublicSuffixList, trie, py2neo...
++ Python - Redis, PublicSuffixList, trie, py2neo, pygeocoder...
 
 Running the tool - 
 
