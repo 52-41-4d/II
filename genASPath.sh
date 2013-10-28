@@ -1,7 +1,15 @@
 #!/bin/bash
 
-RBA=rba #location of rba file
+RBAFile=rba #location of rba file
+INPUT=/scratch/SIGCOMM14/Input/ASPaths
+OUTPUT=/scratch/SIGCOMM14/Output/ASPaths
 
-#change logic to loop and process
+for file in `ls $INPUT`
+do
+    fullSource=$INPUT/$file
+    asFile=${file%.bz2}.txt
+    bzcat $fullSource | $RBAFile | grep "ASPATH" | sed 's/ASPATH: //g' > $OUTPUT/$asFile
+    echo "Completed processing AS file: $file"
+done
 
-bzcat $1 | $RBA | grep "ASPATH" | sed 's/ASPATH: //g'
+# write logic here for Neo4j insert
