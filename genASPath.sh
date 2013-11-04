@@ -12,4 +12,4 @@ do
     echo "Completed processing AS file: $file"
 done
 
-# write logic here for Neo4j insert
+# read from the output folder and write logic here for Neo4j insert
